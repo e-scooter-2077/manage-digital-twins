@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EScooter2077Functions", "EScooter2077Functions\EScooter2077Functions.csproj", "{382C5893-56C7-4968-A380-D1AF90AB5661}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Escooter2077FunctionsTests", "Escooter2077FunctionsTests\Escooter2077FunctionsTests.csproj", "{191DE9D1-2A3A-4A48-9135-0CC01941D805}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{382C5893-56C7-4968-A380-D1AF90AB5661}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{382C5893-56C7-4968-A380-D1AF90AB5661}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{382C5893-56C7-4968-A380-D1AF90AB5661}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{382C5893-56C7-4968-A380-D1AF90AB5661}.Release|Any CPU.Build.0 = Release|Any CPU
+		{191DE9D1-2A3A-4A48-9135-0CC01941D805}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{191DE9D1-2A3A-4A48-9135-0CC01941D805}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{191DE9D1-2A3A-4A48-9135-0CC01941D805}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{191DE9D1-2A3A-4A48-9135-0CC01941D805}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {73289D88-80A7-4795-86A5-DD1348F4C748}
+	EndGlobalSection
+EndGlobal
