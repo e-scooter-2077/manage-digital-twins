@@ -1,0 +1,19 @@
+name: Continuous Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "*"
+      
+jobs:
+  ci:
+    uses: e-scooter-2077/azure-functions-ci/.github/workflows/azure-functions-ci.yml@master
+    with:
+      release-prefix: EScooter Manager Functions
+      azure-functionapp-name: 'escooter-manage-digital-twins'
+      project-name: 'EScooter2077Functions'
+    secrets:
+      azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
