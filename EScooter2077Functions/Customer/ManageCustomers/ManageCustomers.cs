@@ -37,7 +37,7 @@ namespace EScooter.Customer.ManageCustomers
         }
 
         [FunctionName("add-customer")]
-        public async Task AddCustomer([ServiceBusTrigger("%TopicName%", "%AddSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        public async Task AddCustomer([ServiceBusTrigger("%ServiceEventsTopicName%", "%AddCustomerSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
         {
             var digitalTwinsClient = InstantiateDtClient();
 
@@ -54,7 +54,7 @@ namespace EScooter.Customer.ManageCustomers
         }
 
         [FunctionName("remove-customer")]
-        public async Task RemoveCustomer([ServiceBusTrigger("%TopicName%", "%RemoveSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        public async Task RemoveCustomer([ServiceBusTrigger("%ServiceEventsTopicName%", "%RemoveCustomerSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
         {
             var digitalTwinsClient = InstantiateDtClient();
 

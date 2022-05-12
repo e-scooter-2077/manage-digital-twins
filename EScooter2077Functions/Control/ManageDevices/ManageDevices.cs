@@ -28,7 +28,7 @@ namespace EScooter.PhysicalControl.ManageDevices
         }
 
         [FunctionName("add-device-and-twin")]
-        public async Task AddDevice([ServiceBusTrigger("%TopicName%", "%AddSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        public async Task AddDevice([ServiceBusTrigger("%ServiceEventsTopicName%", "%AddDeviceSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
         {
             var message = JsonConvert.DeserializeObject<ScooterCreated>(mySbMsg);
 
@@ -50,7 +50,7 @@ namespace EScooter.PhysicalControl.ManageDevices
         }
 
         [FunctionName("remove-device-and-twin")]
-        public async Task RemoveDevice([ServiceBusTrigger("%TopicName%", "%RemoveSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        public async Task RemoveDevice([ServiceBusTrigger("%ServiceEventsTopicName%", "%RemoveDeviceSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
         {
             var message = JsonConvert.DeserializeObject<ScooterCreated>(mySbMsg);
             await _dtManager.RemoveDigitalTwin(message.Id);

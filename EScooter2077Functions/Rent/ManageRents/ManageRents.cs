@@ -36,7 +36,7 @@ namespace EScooter.Rent.ManageRents
         }
 
         [FunctionName("add-rent")]
-        public async Task AddRent([ServiceBusTrigger("%TopicName%", "%AddSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        public async Task AddRent([ServiceBusTrigger("%ServiceEventsTopicName%", "%AddRentSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
         {
             var message = JsonConvert.DeserializeObject<RentConfirmed>(mySbMsg);
             var client = CreateDigitalTwinsClient();
@@ -51,7 +51,7 @@ namespace EScooter.Rent.ManageRents
         }
 
         [FunctionName("remove-rent")]
-        public async Task RemoveRent([ServiceBusTrigger("%TopicName%", "%RemoveSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        public async Task RemoveRent([ServiceBusTrigger("%ServiceEventsTopicName%", "%RemoveRentSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
         {
             var message = JsonConvert.DeserializeObject<RentCancelledOrStopped>(mySbMsg);
             var client = CreateDigitalTwinsClient();

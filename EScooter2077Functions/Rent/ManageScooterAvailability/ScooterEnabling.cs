@@ -26,7 +26,7 @@ namespace EScooter.Rent.ManageScooterAvailability
         }
 
         [FunctionName("manage-scooter-enabling")]
-        public async Task SetEnabled([ServiceBusTrigger("%TopicName%", "%SubscriptionName%", Connection = "ServiceBusConnectionString")] string mySbMsg, IDictionary<string, object> userProperties)
+        public async Task SetEnabled([ServiceBusTrigger("%ServiceEventsTopicName%", "%SetEnabledSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg, IDictionary<string, object> userProperties)
         {
             var digitalTwinUrl = "https://" + Environment.GetEnvironmentVariable("AzureDTHostname");
             var credential = new DefaultAzureCredential();
