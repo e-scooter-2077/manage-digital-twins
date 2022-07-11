@@ -23,7 +23,7 @@ namespace EScooter.Monitor.ManageReportedProperties
         }
 
         [FunctionName("manage-properties")]
-        public async Task ManageProperties([ServiceBusTrigger("%ReportedPropertiesTopicName%", "%ReportedPropertiesSubscriptionName%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        public async Task ManageProperties([ServiceBusTrigger("%ServiceEventsTopicName%", "%ReportedPropertiesSubscriptionName%", Connection = "ServiceBusConnectionString")] string mySbMsg)
         {
             var scooterStatusChanged = JsonConvert.DeserializeObject<ScooterStatusChanged>(mySbMsg);
             var scooterId = scooterStatusChanged.Id;
