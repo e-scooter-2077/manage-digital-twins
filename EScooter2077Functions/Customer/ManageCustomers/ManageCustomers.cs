@@ -9,66 +9,65 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace EScooter.Customer.ManageCustomers
+namespace EScooter.Customer.ManageCustomers;
+
+public record CustomerCreated(Guid Id);
+
+public record CustomerDeleted(Guid Id);
+
+public class ManageCustomers
 {
-    public record CustomerCreated(Guid Id);
+    private static readonly HttpClient _httpClient = new HttpClient();
+    private static readonly string _digitalTwinUrl = "https://" + Environment.GetEnvironmentVariable("AzureDTHostname");
 
-    public record CustomerDeleted(Guid Id);
+    private readonly ILogger<ManageCustomers> _logger;
 
-    public class ManageCustomers
+    public ManageCustomers(ILogger<ManageCustomers> log)
     {
-        private static readonly HttpClient _httpClient = new HttpClient();
-        private static readonly string _digitalTwinUrl = "https://" + Environment.GetEnvironmentVariable("AzureDTHostname");
+        _logger = log;
+    }
 
-        private readonly ILogger<ManageCustomers> _logger;
+    private static DigitalTwinsClient InstantiateDtClient()
+    {
+        var credential = new DefaultAzureCredential();
+        return new DigitalTwinsClient(
+                    new Uri(_digitalTwinUrl),
+                    credential,
+                    new DigitalTwinsClientOptions { Transport = new HttpClientTransport(_httpClient) });
+    }
 
-        public ManageCustomers(ILogger<ManageCustomers> log)
+    [FunctionName("add-customer")]
+    public async Task AddCustomer([ServiceBusTrigger("%ServiceEventsTopicName%", "%AddCustomerSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+    {
+        var digitalTwinsClient = InstantiateDtClient();
+
+        var message = JsonConvert.DeserializeObject<CustomerCreated>(mySbMsg);
+        try
         {
-            _logger = log;
+            await DTUtils.AddDigitalTwin(message.Id, digitalTwinsClient);
+            _logger.LogInformation($"Add customer: {mySbMsg}");
         }
-
-        private static DigitalTwinsClient InstantiateDtClient()
+        catch (RequestFailedException e)
         {
-            var credential = new DefaultAzureCredential();
-            return new DigitalTwinsClient(
-                        new Uri(_digitalTwinUrl),
-                        credential,
-                        new DigitalTwinsClientOptions { Transport = new HttpClientTransport(_httpClient) });
+            _logger.LogInformation($"Function failed to add customer {e.ErrorCode}");
         }
+    }
 
-        [FunctionName("add-customer")]
-        public async Task AddCustomer([ServiceBusTrigger("%ServiceEventsTopicName%", "%AddCustomerSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+    [FunctionName("remove-customer")]
+    public async Task RemoveCustomer([ServiceBusTrigger("%ServiceEventsTopicName%", "%RemoveCustomerSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+    {
+        var digitalTwinsClient = InstantiateDtClient();
+
+        var message = JsonConvert.DeserializeObject<CustomerDeleted>(mySbMsg);
+
+        try
         {
-            var digitalTwinsClient = InstantiateDtClient();
-
-            var message = JsonConvert.DeserializeObject<CustomerCreated>(mySbMsg);
-            try
-            {
-                await DTUtils.AddDigitalTwin(message.Id, digitalTwinsClient);
-                _logger.LogInformation($"Add customer: {mySbMsg}");
-            }
-            catch (RequestFailedException e)
-            {
-                _logger.LogInformation($"Function failed to add customer {e.ErrorCode}");
-            }
+            await DTUtils.RemoveDigitalTwin(message.Id, digitalTwinsClient);
+            _logger.LogInformation($"Removed customer: {mySbMsg}");
         }
-
-        [FunctionName("remove-customer")]
-        public async Task RemoveCustomer([ServiceBusTrigger("%ServiceEventsTopicName%", "%RemoveCustomerSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        catch (RequestFailedException e)
         {
-            var digitalTwinsClient = InstantiateDtClient();
-
-            var message = JsonConvert.DeserializeObject<CustomerDeleted>(mySbMsg);
-
-            try
-            {
-                await DTUtils.RemoveDigitalTwin(message.Id, digitalTwinsClient);
-                _logger.LogInformation($"Removed customer: {mySbMsg}");
-            }
-            catch (RequestFailedException e)
-            {
-                _logger.LogInformation($"Function failed to remove customer {e.ErrorCode}");
-            }
+            _logger.LogInformation($"Function failed to remove customer {e.ErrorCode}");
         }
     }
 }

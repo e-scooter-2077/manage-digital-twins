@@ -13,45 +13,44 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace EScooter.ScooterMonitor.ManageTelemetryUpdates
+namespace EScooter.ScooterMonitor.ManageTelemetryUpdates;
+
+/// <summary>
+/// A class containing a function to manage device telemetry updates.
+/// </summary>
+public class TelemetryManager
 {
-    /// <summary>
-    /// A class containing a function to manage device telemetry updates.
-    /// </summary>
-    public class TelemetryManager
+    private static readonly HttpClient _httpClient = new HttpClient();
+    private static readonly string _digitalTwinUrl = "https://" + Environment.GetEnvironmentVariable("AzureDTHostname");
+
+    private readonly ILogger<TelemetryManager> _logger;
+
+    public TelemetryManager(ILogger<TelemetryManager> log)
     {
-        private static readonly HttpClient _httpClient = new HttpClient();
-        private static readonly string _digitalTwinUrl = "https://" + Environment.GetEnvironmentVariable("AzureDTHostname");
+        _logger = log;
+    }
 
-        private readonly ILogger<TelemetryManager> _logger;
+    [FunctionName("manage-telemetry")]
+    public async Task ManageTelemetry([EventGridTrigger] TelemetryEvent input)
+    {
+        // Parse message
+        var json = JObject.Parse(input.Data.ToString());
+        var deviceId = json.Value<JObject>("systemProperties").Value<string>("iothub-connection-device-id");
+        var telemetry = JsonConvert.DeserializeObject<ScooterTelemetry>(json.Value<JObject>("body").ToString());
+        _logger.LogInformation(telemetry.ToString());
 
-        public TelemetryManager(ILogger<TelemetryManager> log)
+        // Update properties on DT
+        var patch = TelemetryPatchFactory.CreatePatchDocument(telemetry);
+        _logger.LogInformation($"Patch: {patch}");
+
+        var credential = new DefaultAzureCredential();
+        var digitalTwinsClient = new DigitalTwinsClient(new Uri(_digitalTwinUrl), credential, new DigitalTwinsClientOptions
         {
-            _logger = log;
-        }
+            Transport = new HttpClientTransport(_httpClient)
+        });
 
-        [FunctionName("manage-telemetry")]
-        public async Task ManageTelemetry([EventGridTrigger] TelemetryEvent input)
-        {
-            // Parse message
-            var json = JObject.Parse(input.Data.ToString());
-            var deviceId = json.Value<JObject>("systemProperties").Value<string>("iothub-connection-device-id");
-            var telemetry = JsonConvert.DeserializeObject<ScooterTelemetry>(json.Value<JObject>("body").ToString());
-            _logger.LogInformation(telemetry.ToString());
+        await digitalTwinsClient.UpdateDigitalTwinAsync(deviceId, patch);
 
-            // Update properties on DT
-            var patch = TelemetryPatchFactory.CreatePatchDocument(telemetry);
-            _logger.LogInformation($"Patch: {patch}");
-
-            var credential = new DefaultAzureCredential();
-            var digitalTwinsClient = new DigitalTwinsClient(new Uri(_digitalTwinUrl), credential, new DigitalTwinsClientOptions
-            {
-                Transport = new HttpClientTransport(_httpClient)
-            });
-
-            await digitalTwinsClient.UpdateDigitalTwinAsync(deviceId, patch);
-
-            _logger.LogInformation($"Update telemetry on: {deviceId}");
-        }
+        _logger.LogInformation($"Update telemetry on: {deviceId}");
     }
 }

@@ -5,57 +5,56 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace EScooter.PhysicalControl.ManageDevices
+namespace EScooter.PhysicalControl.ManageDevices;
+
+public record ScooterCreated(Guid Id);
+
+public record ScooterDeleted(Guid Id);
+
+/// <summary>
+/// A function that adds a device to the IoTHub when the event is received.
+/// </summary>
+public class ManageDevices
 {
-    public record ScooterCreated(Guid Id);
+    private static readonly HttpClient _httpClient = new HttpClient();
+    private static readonly DigitalTwinManager _dtManager = DigitalTwinManager.InstantiateDigitalTwinManager(_httpClient);
+    private static readonly IoTHubManager _iotHubManager = IoTHubManager.InstantiateIoTHubManager();
 
-    public record ScooterDeleted(Guid Id);
+    private readonly ILogger<ManageDevices> _logger;
 
-    /// <summary>
-    /// A function that adds a device to the IoTHub when the event is received.
-    /// </summary>
-    public class ManageDevices
+    public ManageDevices(ILogger<ManageDevices> log)
     {
-        private static readonly HttpClient _httpClient = new HttpClient();
-        private static readonly DigitalTwinManager _dtManager = DigitalTwinManager.InstantiateDigitalTwinManager(_httpClient);
-        private static readonly IoTHubManager _iotHubManager = IoTHubManager.InstantiateIoTHubManager();
+        _logger = log;
+    }
 
-        private readonly ILogger<ManageDevices> _logger;
+    [FunctionName("add-device-and-twin")]
+    public async Task AddDevice([ServiceBusTrigger("%ServiceEventsTopicName%", "%AddDeviceSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+    {
+        var message = JsonConvert.DeserializeObject<ScooterCreated>(mySbMsg);
 
-        public ManageDevices(ILogger<ManageDevices> log)
+        // Add Digital Twin first
+        await _dtManager.AddDigitalTwin(message.Id);
+
+        // Then add IoTHub Device
+        var (device, exists) = await _iotHubManager.AddOrGetDeviceAsync(message.Id);
+        if (exists)
         {
-            _logger = log;
+            _logger.LogInformation($"Device with id {device.Id} already existing");
         }
-
-        [FunctionName("add-device-and-twin")]
-        public async Task AddDevice([ServiceBusTrigger("%ServiceEventsTopicName%", "%AddDeviceSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+        else
         {
-            var message = JsonConvert.DeserializeObject<ScooterCreated>(mySbMsg);
-
-            // Add Digital Twin first
-            await _dtManager.AddDigitalTwin(message.Id);
-
-            // Then add IoTHub Device
-            var (device, exists) = await _iotHubManager.AddOrGetDeviceAsync(message.Id);
-            if (exists)
-            {
-                _logger.LogInformation($"Device with id {device.Id} already existing");
-            }
-            else
-            {
-                _logger.LogInformation($"New device registered with id {device.Id}");
-                await _iotHubManager.SetDefaultProperties(message.Id);
-                _logger.LogInformation($"Update device twin default properties");
-            }
+            _logger.LogInformation($"New device registered with id {device.Id}");
+            await _iotHubManager.SetDefaultProperties(message.Id);
+            _logger.LogInformation($"Update device twin default properties");
         }
+    }
 
-        [FunctionName("remove-device-and-twin")]
-        public async Task RemoveDevice([ServiceBusTrigger("%ServiceEventsTopicName%", "%RemoveDeviceSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
-        {
-            var message = JsonConvert.DeserializeObject<ScooterCreated>(mySbMsg);
-            await _dtManager.RemoveDigitalTwin(message.Id);
-            await _iotHubManager.RemoveDevice(message.Id);
-            _logger.LogInformation($"Device with id {message.Id} was removed");
-        }
+    [FunctionName("remove-device-and-twin")]
+    public async Task RemoveDevice([ServiceBusTrigger("%ServiceEventsTopicName%", "%RemoveDeviceSubscription%", Connection = "ServiceBusConnectionString")] string mySbMsg)
+    {
+        var message = JsonConvert.DeserializeObject<ScooterCreated>(mySbMsg);
+        await _dtManager.RemoveDigitalTwin(message.Id);
+        await _iotHubManager.RemoveDevice(message.Id);
+        _logger.LogInformation($"Device with id {message.Id} was removed");
     }
 }

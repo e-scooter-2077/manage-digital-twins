@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace EScooter.Monitor.ManageTelemetryUpdates
+namespace EScooter.Monitor.ManageTelemetryUpdates;
+
+public static class ConverterUtils
 {
-    public static class ConverterUtils
+    public static double ConvertSpeed(double speedInMS)
     {
-        public static double ConvertSpeed(double speedInMS)
-        {
-            return Math.Round(speedInMS * 3.6, 4);
-        }
+        return Math.Round(speedInMS * 3.6, 4);
     }
 }
