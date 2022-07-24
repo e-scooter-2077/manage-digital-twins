@@ -12,8 +12,8 @@ jobs:
   ci:
     uses: e-scooter-2077/azure-functions-ci/.github/workflows/azure-functions-ci.yml@master
     with:
-      release-prefix: EScooter Manager Functions
+      release-prefix: EScooter Digital Twins Manager Functions
       azure-functionapp-name: 'escooter-manage-digital-twins'
-      project-name: 'EScooter2077Functions'
+      project-name: 'EScooter.ManageDigitalTwins'
     secrets:
       azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
