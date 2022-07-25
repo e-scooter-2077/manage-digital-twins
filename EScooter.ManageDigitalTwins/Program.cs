@@ -1,7 +1,15 @@
 using Microsoft.Extensions.Hosting;
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
-    .Build();
+namespace EScooter.ManageDigitalTwins;
 
-host.Run();
+public class Program
+{
+    public static void Main()
+    {
+        var host = new HostBuilder()
+            .ConfigureFunctionsWorkerDefaults()
+            .Build();
+
+        host.Run();
+    }
+}

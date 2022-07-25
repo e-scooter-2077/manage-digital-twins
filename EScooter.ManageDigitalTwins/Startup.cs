@@ -3,6 +3,7 @@ using Azure.DigitalTwins.Core;
 using Azure.Identity;
 using EScooter.ManageDigitalTwins;
 using EScooter.ManageDigitalTwins.DigitalTwins;
+using EScooter.ManageDigitalTwins.IotHub;
 using EScooter.ManageDigitalTwins.Services;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -41,5 +42,6 @@ public class Startup : FunctionsStartup
         });
 
         services.AddSingleton<IDigitalTwinsService, AdtDigitalTwinsService>();
+        services.AddSingleton<IScooterDevicesService, IotHubScooterDevicesService>();
     }
 }

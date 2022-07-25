@@ -1,20 +1,21 @@
-﻿using Microsoft.Azure.Devices;
+﻿using EScooter.ManageDigitalTwins.Services;
+using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using System;
 using System.Threading.Tasks;
 
 namespace EScooter.ManageDigitalTwins.IotHub;
 
-public class IotHubScooterCommands
+public class IotHubScooterDevicesService : IScooterDevicesService
 {
     private readonly RegistryManager _registryManager;
 
-    public IotHubScooterCommands(RegistryManager registryManager)
+    public IotHubScooterDevicesService(RegistryManager registryManager)
     {
         _registryManager = registryManager;
     }
 
-    public async Task CreateScooter(Guid id)
+    public async Task CreateScooterDevice(Guid id)
     {
         try
         {
@@ -25,7 +26,7 @@ public class IotHubScooterCommands
         }
     }
 
-    public async Task RemoveScooter(Guid id)
+    public async Task RemoveScooterDevice(Guid id)
     {
         await _registryManager.RemoveDeviceAsync(id.ToString());
     }
